@@ -1,0 +1,43 @@
+spring:
+  profiles:
+    active: local
+    group:
+      local:
+        - module-common
+      dev:
+        - module-common
+
+  config:
+    import: optional:file:.env[.properties]
+
+server:
+  port: 8080
+
+# Swagger
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    groups-order: DESC
+    doc-expansion: none
+  api-docs:
+    path: /v3/api-docs
+
+---
+spring:
+  config:
+    activate:
+      on-profile: local
+
+logging:
+  level:
+    com.example.api: DEBUG
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+logging:
+  level:
+    com.example.api: INFO

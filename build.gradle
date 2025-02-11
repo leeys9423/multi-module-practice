@@ -1,0 +1,129 @@
+// 전역 변수로 사용할 버전 정보를 설정하는 블록
+buildscript {
+	ext {  // ext는 build script에서 사용할 수 있는 사용자 정의 속성을 설정
+		springBootVersion = '3.2.4'
+		querydslVersion = '5.0.0'
+	}
+}
+
+// 프로젝트에서 사용할 플러그인을 설정하는 블록
+plugins {
+	id 'java'  // 자바 컴파일러 사용
+	id 'org.springframework.boot' version '3.2.4'  // 스프링 부트 기능 사용
+	id 'io.spring.dependency-management' version '1.1.4'  // 스프링의 의존성 버전을 자동 관리
+	id 'com.diffplug.spotless' version '6.25.0'  // 코드 스타일 검사 도구
+	id 'jacoco'  // 테스트 커버리지 측정 도구
+}
+
+// 모든 프로젝트(루트 프로젝트 + 하위 모듈)에 적용되는 설정
+allprojects {
+	group = 'com.example'  // 프로젝트 그룹 ID
+	version = '0.0.1-SNAPSHOT'  // 프로젝트 버전
+
+	repositories {
+		mavenCentral()  // 의존성을 다운로드 받을 저장소 지정
+	}
+}
+
+// 하위 모듈에만 적용되는 설정
+subprojects {
+	// 각 하위 모듈에 적용할 플러그인들
+	apply plugin: 'java'
+	apply plugin: 'org.springframework.boot'
+	apply plugin: 'io.spring.dependency-management'
+	apply plugin: 'com.diffplug.spotless'
+	apply plugin: 'jacoco'
+
+	// 자바 버전 설정
+	sourceCompatibility = '17'  // 소스코드의 자바 버전
+	targetCompatibility = '17'  // 컴파일된 바이트코드의 자바 버전
+
+	// 의존성 구성 설정
+	configurations {
+		compileOnly {
+			extendsFrom annotationProcessor  // lombok 사용을 위한 설정
+		}
+	}
+
+	// 모든 하위 모듈에서 공통적으로 사용할 의존성
+	dependencies {
+		// 스프링 부트 핵심 기능
+		implementation 'org.springframework.boot:spring-boot-starter'
+		// 유효성 검사 기능
+		implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+		// lombok 설정
+		compileOnly 'org.projectlombok:lombok'  // 컴파일 시에만 사용
+		annotationProcessor 'org.projectlombok:lombok'  // 컴파일 시 어노테이션 처리
+
+		// 테스트 관련 의존성
+		testImplementation 'org.springframework.boot:spring-boot-starter-test'
+		testImplementation 'org.junit.jupiter:junit-jupiter-api'
+		testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+	}
+
+	// 테스트 설정
+	test {
+		useJUnitPlatform()  // JUnit5 사용
+		finalizedBy jacocoTestReport  // 테스트 완료 후 커버리지 리포트 생성
+	}
+
+	// JaCoCo 테스트 커버리지 설정
+	jacocoTestReport {
+		reports {
+			xml.required = false
+			csv.required = false
+			html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+		}
+	}
+
+	// 코드 스타일 검사 설정
+	spotless {
+		java {
+			importOrder()  // import 문 정렬
+			removeUnusedImports()  // 사용하지 않는 import 제거
+			googleJavaFormat()  // Google Java 스타일 가이드 적용
+			formatAnnotations()  // 어노테이션 포맷팅
+		}
+	}
+
+	// jar 파일 생성 설정
+	bootJar {
+		enabled = false  // 실행 가능한 jar 생성 비활성화
+	}
+
+	jar {
+		enabled = true  // 일반 jar 생성 활성화
+	}
+
+	// 테스트 리포트 설정
+	tasks.named('test') {
+		reports.html.required = true  // HTML 테스트 리포트 생성
+	}
+}
+
+// module-api 모듈에만 적용되는 특별한 설정
+project(':module-api') {
+	bootJar {
+		enabled = true  // module-api만 실행 가능한 jar 생성
+	}
+}
+
+// 전체 프로젝트의 테스트 커버리지 통합 리포트 생성 태스크
+task testCoverageReport(type: JacocoReport) {
+	dependsOn = subprojects.test  // 모든 하위 모듈의 테스트 완료 후 실행
+
+	// 모든 하위 모듈의 테스트 커버리지 데이터 수집
+	executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+	// 모든 하위 모듈의 소스 코드 포함
+	subprojects.each {
+		sourceSets it.sourceSets.main
+	}
+
+	// 리포트 생성 설정
+	reports {
+		xml.required = true
+		html.required = true
+	}
+}
