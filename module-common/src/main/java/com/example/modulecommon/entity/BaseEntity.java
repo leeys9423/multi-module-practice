@@ -14,11 +14,10 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 public abstract class BaseEntity extends BaseTimeEntity {
 
     @CreatedBy
-    @Column(updatable = false)  // 한번 저장되면 수정 불가
-    private String createdBy;    // 생성자
+    @Column(updatable = false) // 한번 저장되면 수정 불가
+    private String createdBy; // 생성자
 
-    @LastModifiedBy
-    private String updatedBy;   // 수정자
+    @LastModifiedBy private String updatedBy; // 수정자
 
     // 처음 회원가입 시 가입한 이메일을 세팅해주기 위해 생성
     public void setCreatedBy(String createdBy) {

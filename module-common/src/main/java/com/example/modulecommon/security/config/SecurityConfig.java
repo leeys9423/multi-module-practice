@@ -1,5 +1,6 @@
 package com.example.modulecommon.security.config;
 
+import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -14,8 +15,6 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -33,25 +32,37 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 // CORS 설정
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // h2-console 사용을 위한 frame options 설정 추가
+                .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()))
                 // 세션 설정(비활성화)
-                .sessionManagement((sessionManagement) ->
-                        sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(
+                        (sessionManagement) ->
+                                sessionManagement.sessionCreationPolicy(
+                                        SessionCreationPolicy.STATELESS))
                 // 요청에 대한 권한 설정
-                .authorizeHttpRequests((authorizeRequests) ->
-                        authorizeRequests
-                                .requestMatchers("/api/auth/**").permitAll()           // 인증 관련 API는 모두 허용
-                                .requestMatchers("/api/public/**").permitAll()         // 공개 API는 모두 허용
-                                .requestMatchers("/swagger-ui/**").permitAll()         // Swagger UI 허용
-                                .requestMatchers("/v3/api-docs/**").permitAll()        // API Docs 허용
-                                .requestMatchers("/health").permitAll()                // 헬스 체크 허용(Spring Actuator 사용 시)
-                                .anyRequest().authenticated()                            // 그 외 요청은 인증 필요
-                )
+                .authorizeHttpRequests(
+                        (authorizeRequests) ->
+                                authorizeRequests
+                                        .requestMatchers("/h2-console/**")
+                                        .permitAll() // h2-console 접근 허용
+                                        .requestMatchers("/api/auth/**")
+                                        .permitAll() // 인증 관련 API는 모두 허용
+                                        .requestMatchers("/api/public/**")
+                                        .permitAll() // 공개 API는 모두 허용
+                                        .requestMatchers("/swagger-ui/**")
+                                        .permitAll() // Swagger UI 허용
+                                        .requestMatchers("/v3/api-docs/**")
+                                        .permitAll() // API Docs 허용
+                                        .requestMatchers("/health")
+                                        .permitAll() // 헬스 체크 허용(Spring Actuator 사용 시)
+                                        .anyRequest()
+                                        .authenticated() // 그 외 요청은 인증 필요
+                        )
                 // Exception Handling
-                .exceptionHandling((exceptionHandling) ->
-                        exceptionHandling
-                                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-                );
+                .exceptionHandling(
+                        (exceptionHandling) ->
+                                exceptionHandling.authenticationEntryPoint(
+                                        new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
 
         return http.build();
     }
@@ -61,23 +72,19 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // 허용할 Origin 설정
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:3000",     // 로컬 프론트엔드
-                "https://your-domain.com"    // 운영 프론트엔드
-        ));
+        configuration.setAllowedOrigins(
+                List.of(
+                        "http://localhost:3000", // 로컬 프론트엔드
+                        "https://your-domain.com" // 운영 프론트엔드
+                        ));
 
         // 허용할 HTTP 메서드
-        configuration.setAllowedMethods(List.of(
-                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
-        ));
+        configuration.setAllowedMethods(
+                List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
         // 허용할 헤더
-        configuration.setAllowedHeaders(List.of(
-                "Authorization",
-                "Content-Type",
-                "Cache-Control",
-                "x-requested-with"
-        ));
+        configuration.setAllowedHeaders(
+                List.of("Authorization", "Content-Type", "Cache-Control", "x-requested-with"));
 
         // 인증 정보 포함 허용
         configuration.setAllowCredentials(true);

@@ -82,7 +82,7 @@ subprojects {
 		java {
 			importOrder()  // import 문 정렬
 			removeUnusedImports()  // 사용하지 않는 import 제거
-			googleJavaFormat()  // Google Java 스타일 가이드 적용
+			googleJavaFormat().aosp()  // Google Java 스타일 가이드 적용, aosp 4칸 들여쓰기
 			formatAnnotations()  // 어노테이션 포맷팅
 		}
 	}

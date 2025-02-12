@@ -4,8 +4,10 @@ spring:
     group:
       local:
         - module-common
+        - module-member
       dev:
         - module-common
+        - module-member
 
   config:
     import: optional:file:.env[.properties]

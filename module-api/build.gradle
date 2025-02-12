@@ -1,5 +1,6 @@
 dependencies {
     implementation project(':module-common')
+    implementation project(':module-member')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
@@ -7,7 +8,7 @@ dependencies {
 }
 
 tasks.register('copyExternalConfigs', Copy) {
-//    from(project(':module-common').file('src/main/resources/application-common.yml'))
+    from(project(':module-member').file('src/main/resources/application-member.yml'))
     into(layout.buildDirectory.dir("resources/main"))
 }
 

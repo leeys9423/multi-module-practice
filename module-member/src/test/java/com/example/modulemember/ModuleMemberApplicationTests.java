@@ -1,10 +1,10 @@
-package com.example.moduleapi;
+package com.example.modulemember;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ModuleApiApplicationTests {
+class ModuleMemberApplicationTests {
 
     @Test
     void contextLoads() {}
